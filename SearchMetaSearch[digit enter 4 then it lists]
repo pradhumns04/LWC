@@ -1,0 +1,254 @@
+import { LightningElement, wire, track } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import searchKeyword from '@salesforce/apex/CustomTMWatchController.searchKeyword';
+import saveSelectedRecords from '@salesforce/apex/CustomTMWatchController.saveSelectedRecords';
+
+const columns = [
+    { label: 'TmWatch', fieldName: 'TmWatch' },
+    { label: 'MatterTitle', fieldName: 'MatterTitle' },
+    { label: 'Search Result', fieldName: 'searchResult' }, // Add the Search Result column
+    { type: 'checkbox', label: 'Select', fieldName: 'isSelected' },
+];
+
+export default class MyTableComponent extends LightningElement {
+    chr = 0;
+    searchResults = [];
+    selectedRecords = [];
+    columns = columns;
+    selectAll = false;
+
+    handleInputChange(event) {
+        this.chr = parseInt(event.target.value, 10);
+    }
+
+    search() {
+        searchKeyword({ chr: this.chr })
+            .then(result => {
+                this.searchResults = result.map(item => ({ ...item, isSelected: false }));
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    handleCheckboxChange(event) {
+        const recordId = event.target.dataset.id;
+        const selectedRecord = this.searchResults.find(record => record.Id === recordId);
+        if (selectedRecord) {
+            selectedRecord.isSelected = !selectedRecord.isSelected;
+        }
+        this.selectAll = this.searchResults.every(record => record.isSelected);
+        this.selectedRecords = this.searchResults
+            .filter(record => record.isSelected)
+            .map(record => ({
+                TmWatch: record.TmWatch,
+                MatterTitle: record.MatterTitle
+            }));
+    }
+
+    handleSelectAll(event) {
+        this.selectAll = event.target.checked;
+        this.searchResults = this.searchResults.map(record => ({
+            ...record,
+            isSelected: this.selectAll
+        }));
+        this.selectedRecords = this.selectAll
+            ? this.searchResults.map(record => ({
+                TmWatch: record.TmWatch,
+                MatterTitle: record.MatterTitle
+            }))
+            : [];
+    }
+
+    submitSelectedRecords() {
+        const selectedRecords = this.searchResults
+            .filter(record => record.isSelected)
+            .map(record => ({
+                isSelected: record.isSelected,
+                MatterTitle: record.MatterTitle
+            }));
+    
+        // Call the new Apex method to insert records into TM_Result__c object
+        saveSelectedRecords({ selectedRecords })
+            .then(() => {
+                // Reset the selection and do any necessary UI updates
+                this.resetSelection();
+                // Show success message
+                this.showSuccessMessage();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    showSuccessMessage() {
+        const event = new ShowToastEvent({
+            title: 'Success',
+            message: 'Records submitted successfully',
+            variant: 'success',
+        });
+        this.dispatchEvent(event);
+    }
+    
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+<template>
+    <div>
+        <lightning-input label="Search Digit" type="number" value={chr} onchange={handleInputChange}></lightning-input>
+        <lightning-button label="Search" onclick={search}></lightning-button>
+    </div>
+    <template if:true={searchResults}>
+        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="slds-text-title_caps" scope="col">
+                        TmWatch
+                    </th>
+                    <th class="slds-text-title_caps" scope="col">
+                        Search Result
+                    </th>
+                    <th class="slds-text-title_caps" scope="col">
+                        MatterTitle
+                    </th>
+                    <th class="slds-text-title_caps" scope="col">
+                        Select
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <template for:each={searchResults} for:item="record">
+                    <tr key={record.Id}>
+                        <td data-label="TmWatch">
+                            {record.TmWatch}
+                        </td>
+                        <td data-label="Search Result">
+                            {record.searchResult} <!-- Ensure this line is present -->
+                        </td>
+                        <td data-label="MatterTitle">
+                            {record.MatterTitle}
+                        </td>
+                        <td data-label="Select">
+                            <lightning-input type="checkbox" checked={record.isSelected} data-id={record.Id} onchange={handleCheckboxChange}></lightning-input>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </template>
+    <div>
+        <lightning-input type="checkbox" label="Select All" checked={selectAll} onchange={handleSelectAll}></lightning-input>
+    </div>
+    <div>
+        <lightning-button label="Submit" onclick={submitSelectedRecords}></lightning-button>
+    </div>
+</template>
+
+
+
+
+
+
+
+
+
+
+public with sharing class CustomTMWatchController {
+    public class SearchResult {
+        @AuraEnabled
+        public Boolean isSelected { get; set; }
+        @AuraEnabled
+        public String TmWatch { get; set; }
+        @AuraEnabled
+        public String MatterTitle { get; set; }
+        @AuraEnabled
+        public Id Id { get; set; }
+        @AuraEnabled
+        public String searchResult { get; set; } // Add the searchResult field
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<SearchResult> searchKeyword(Integer chr) {
+        String[] excludedKeyword = new String[]{'to', 'TO', 'THE', 'the', '&', 'in', 'AND', 'and'};
+        List<SearchResult> results = new List<SearchResult>();
+        
+        List<TM_Watch__c> tmList = [SELECT Id, Mark__c FROM TM_Watch__c WHERE Mark__c != null];
+        List<Opportunity> matterList = [SELECT Id, Name FROM Opportunity];
+        
+        String[] arKeyword;
+        String mark;
+        
+        for (TM_Watch__c tm : tmList) {
+            if (tm.Mark__c == null) {
+                continue;
+            }
+            mark = tm.Mark__c;
+            arKeyword = mark.split(' ');
+            for (String k : arKeyword) {
+                if (k.length() < chr) {
+                    continue;
+                }
+                if (excludedKeyword.contains(k.substring(0, chr))) {
+                    continue;
+                }
+                SearchResult result = new SearchResult();
+                result.TmWatch = tm.Mark__c;
+                result.searchResult = k.substring(0, chr); // Calculate searchResult based on chr
+                processOpportunity(result, matterList, k.substring(0, chr));
+                if (!String.isBlank(result.MatterTitle)) {
+                    result.Id = tm.Id;
+                    results.add(result);
+                }
+            }
+        }
+        return results;
+    }
+
+    private static void processOpportunity(SearchResult result, List<Opportunity> matterList, String keyword) {
+        for (Opportunity op : matterList) {
+            if (op.Name.toLowerCase().contains(keyword.toLowerCase())) {
+                result.MatterTitle = op.Name;
+                break;
+            }
+        }
+    }
+
+    @AuraEnabled
+    public static void saveSelectedRecords(List<SearchResult> selectedRecords) {
+        List<TM_Result__c> newRecordsToInsert = new List<TM_Result__c>();
+        for (SearchResult record : selectedRecords) {
+            if (record.isSelected && record.MatterTitle!=null) {
+                TM_Result__c newRecord = new TM_Result__c();
+                    newRecord.Matter_Title__c = record.MatterTitle;
+                    // Set any other required fields here
+                    newRecordsToInsert.add(newRecord);
+                
+            }
+        }
+        if (!newRecordsToInsert.isEmpty()) {
+            insert newRecordsToInsert;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
