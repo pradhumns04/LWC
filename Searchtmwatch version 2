@@ -1,0 +1,572 @@
+<template>
+<lightning-card>
+  <div class="slds-grid slds-gutters backimgg">
+    <div class="slds-col slds-size_1-of-6">
+      <span><lightning-input label="Search Digit" type="number" value={chr} onchange={handleInputChange}></lightning-input></span>
+    </div>
+    <div class="slds-col slds-size_1-of-6 Searchbutton">
+      <span><lightning-button label="Search" onclick={search}></lightning-button></span>
+    </div>
+    <div class="slds-col slds-size_1-of-6 Searchbutton returnbutton">
+      <span><lightning-button label="Return to list view" onclick={close}></lightning-button></span>
+    </div>
+    <div class="slds-col slds-size_1-of-6  Submitbutton ">
+      <span><lightning-button label="Submit" onclick={submitSelectedRecords}></lightning-button></span>
+    </div>    
+    </div>
+ 
+
+  <div id="containerDiv" onmousemove={handlemousemove} onmouseup={handlemouseup}
+         ondblclick={handledblclickresizable}
+         class="slds-table_header-fixed_container slds-border_right slds-border_left tableScroll backimg"
+         onscroll={tableOuterDivScrolled}>
+        <div id="tableViewInnerDiv" onscroll={tableScrolled} class="slds-scrollable_y tableViewInnerDiv backimg">
+          <template if:true={searchResults}>
+
+            <table
+                   class="slds-table slds-table_bordered slds-table_header-fixed backimg slds-table_resizable-cols slds-table_fixed-layout backimg">
+                <thead>
+                    <tr>
+                        <th class="slds-is-resizable dv-dynamic-width" scope="col"   title="Column 1">
+                            <div class="slds-cell-fixed"  >
+                                <a class="slds-th__action slds-text-link--reset backimg">
+                                    <span class="slds-truncate ">Applicants</span>
+                                </a>
+                                <div class="slds-resizable  backimg">
+                                    <span class="slds-resizable__handle" onmousedown={handlemousedown}>
+                                        <span class="slds-resizable__divider"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="slds-is-resizable dv-dynamic-width" scope="col"   title="Column 2">
+                            <div class="slds-cell-fixed backimg"  >
+                                <a class="slds-th__action slds-text-link--reset backimg">
+                                    <span class="slds-truncate">TmWatch</span>
+                                </a>
+                                <div class="slds-resizable">
+                                    <span class="slds-resizable__handle" onmousedown={handlemousedown}>
+                                        <span class="slds-resizable__divider"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="slds-is-resizable dv-dynamic-width" scope="col"   title="Column 2">
+                            <div class="slds-cell-fixed backimg"  >
+                                <a class="slds-th__action slds-text-link--reset backimg">
+                                    <span class="slds-truncate">Search Result</span>
+                                </a>
+                                <div class="slds-resizable">
+                                    <span class="slds-resizable__handle" onmousedown={handlemousedown}>
+                                        <span class="slds-resizable__divider"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="slds-is-resizable dv-dynamic-width" scope="col"   title="Column 2">
+                            <div class="slds-cell-fixed backimg"  >
+                                <a class="slds-th__action slds-text-link--reset backimg">
+                                    <span class="slds-truncate">MatterTitle</span>
+                                </a>
+                                <div class="slds-resizable">
+                                    <span class="slds-resizable__handle" onmousedown={handlemousedown}>
+                                        <span class="slds-resizable__divider"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="slds-is-resizable dv-dynamic-width" scope="col"   title="Column 3">
+                            <div class="slds-cell-fixed"  >
+                                <a class="slds-th__action slds-text-link--reset backimg">
+                                    <span class="slds-truncate">Select</span>
+                                </a>
+                                <div class="slds-resizable">
+                                    <span class="slds-resizable__handle" onmousedown={handlemousedown}>
+                                        <span class="slds-resizable__divider"></span>
+                                    </span>
+                                </div>
+                            </div>
+                        </th>
+                        <th scope="col">
+                            <div class="slds-cell-fixed">
+                                  
+                            </div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                  <template for:each={searchResults} for:item="record">   
+                      <tr class="slds-truncate dv-dynamic-width" key={record.Id}>
+                         
+                          <td class="slds-truncate dv-dynamic-width textclass" data-label="Contact Title">
+                              {record.Applicants}
+                          </td>
+                          <td  class="slds-truncate dv-dynamic-width textclass" data-label="Opportunity Name">
+                              {record.TmWatch}
+                          </td>
+                          <td  class="slds-truncate dv-dynamic-width textclass" data-label="Opportunity Name">
+                              {record.searchResult}
+                          </td>
+                          <td  class="slds-truncate dv-dynamic-width textclass" data-label="Opportunity Name">
+                              {record.MatterTitle}
+                          </td>
+                           <td class="slds-truncate dv-dynamic-width" data-label="Select">
+                              <!-- Add a checkbox for each record -->
+                              <lightning-input type="checkbox" checked={record.isSelected} data-id={record.Id} onchange={handleCheckboxChange}></lightning-input>
+                          </td>
+                          <!-- Add other columns if needed -->
+                      </tr>
+                  </template>
+              </tbody>
+            </table></template>
+            
+        </div>
+    </div>
+  </lightning-card>
+
+</template>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?xml version="1.0"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+	<apiVersion>57.0</apiVersion>
+	<isExposed>true</isExposed>
+	<masterLabel>List View Button</masterLabel>
+	<targets>
+		<target>lightning__RecordPage</target>
+		<target>lightning__AppPage</target>
+		<target>lightning__HomePage</target>
+		<target>lightning__Tab</target>
+	</targets>
+</LightningComponentBundle>
+
+
+
+
+
+
+
+
+
+
+import { LightningElement, wire, track } from 'lwc';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
+import searchKeyword from '@salesforce/apex/CustomTMWatchController.searchKeyword';
+import saveSelectedRecords from '@salesforce/apex/CustomTMWatchController.saveSelectedRecords';
+
+const columns = [
+    { label: 'Applicants', fieldName: 'Applicants' },
+    { label: 'TmWatch', fieldName: 'TmWatch' },
+    { label: 'MatterTitle', fieldName: 'MatterTitle' },
+    { label: 'Search Result', fieldName: 'searchResult' }, // Add the Search Result column
+    { type: 'checkbox', label: 'Select', fieldName: 'isSelected' },
+];
+
+export default class MyTableComponent extends LightningElement {
+    chr = 0;
+    searchResults = [];
+    selectedRecords = [];
+    columns = columns;
+    selectAll = false;
+
+
+fixedWidth = "width:15rem;";
+    
+
+
+    
+ 
+    //FOR HANDLING THE HORIZONTAL SCROLL OF TABLE MANUALLY
+    tableOuterDivScrolled(event) {
+        this._tableViewInnerDiv = this.template.querySelector(".tableViewInnerDiv");
+        if (this._tableViewInnerDiv) {
+            if (!this._tableViewInnerDivOffsetWidth || this._tableViewInnerDivOffsetWidth === 0) {
+                this._tableViewInnerDivOffsetWidth = this._tableViewInnerDiv.offsetWidth;
+            }
+            this._tableViewInnerDiv.style = 'width:' + (event.currentTarget.scrollLeft + this._tableViewInnerDivOffsetWidth) + "px;" + this.tableBodyStyle;
+        }
+        this.tableScrolled(event);
+    }
+ 
+    tableScrolled(event) {
+        if (this.enableInfiniteScrolling) {
+            if ((event.target.scrollTop + event.target.offsetHeight) >= event.target.scrollHeight) {
+                this.dispatchEvent(new CustomEvent('showmorerecords', {
+                    bubbles: true
+                }));
+            }
+        }
+        if (this.enableBatchLoading) {
+            if ((event.target.scrollTop + event.target.offsetHeight) >= event.target.scrollHeight) {
+                this.dispatchEvent(new CustomEvent('shownextbatch', {
+                    bubbles: true
+                }));
+            }
+        }
+    }
+ 
+    //#region ***************** RESIZABLE COLUMNS *************************************/
+    handlemouseup(e) {
+        this._tableThColumn = undefined;
+        this._tableThInnerDiv = undefined;
+        this._pageX = undefined;
+        this._tableThWidth = undefined;
+    }
+ 
+    handlemousedown(e) {
+        if (!this._initWidths) {
+            this._initWidths = [];
+            let tableThs = this.template.querySelectorAll("table thead .dv-dynamic-width");
+            tableThs.forEach(th => {
+                this._initWidths.push(th.style.width);
+            });
+        }
+ 
+        this._tableThColumn = e.target.parentElement;
+        this._tableThInnerDiv = e.target.parentElement;
+        while (this._tableThColumn.tagName !== "TH") {
+            this._tableThColumn = this._tableThColumn.parentNode;
+        }
+        while (!this._tableThInnerDiv.className.includes("slds-cell-fixed")) {
+            this._tableThInnerDiv = this._tableThInnerDiv.parentNode;
+        }
+        console.log("handlemousedown this._tableThColumn.tagName => ", this._tableThColumn.tagName);
+        this._pageX = e.pageX;
+ 
+        this._padding = this.paddingDiff(this._tableThColumn);
+ 
+        this._tableThWidth = this._tableThColumn.offsetWidth - this._padding;
+        console.log("handlemousedown this._tableThColumn.tagName => ", this._tableThColumn.tagName);
+    }
+ 
+    handlemousemove(e) {
+        console.log("mousemove this._tableThColumn => ", this._tableThColumn);
+        if (this._tableThColumn && this._tableThColumn.tagName === "TH") {
+            this._diffX = e.pageX - this._pageX;
+ 
+            this.template.querySelector("table").style.width = (this.template.querySelector("table") - (this._diffX)) + 'px';
+ 
+            this._tableThColumn.style.width = (this._tableThWidth + this._diffX) + 'px';
+            this._tableThInnerDiv.style.width = this._tableThColumn.style.width;
+ 
+            let tableThs = this.template.querySelectorAll("table thead .dv-dynamic-width");
+            let tableBodyRows = this.template.querySelectorAll("table tbody tr");
+            let tableBodyTds = this.template.querySelectorAll("table tbody .dv-dynamic-width");
+            tableBodyRows.forEach(row => {
+                let rowTds = row.querySelectorAll(".dv-dynamic-width");
+                rowTds.forEach((td, ind) => {
+                    rowTds[ind].style.width = tableThs[ind].style.width;
+                });
+            });
+        }
+    }
+ 
+    handledblclickresizable() {
+        let tableThs = this.template.querySelectorAll("table thead .dv-dynamic-width");
+        let tableBodyRows = this.template.querySelectorAll("table tbody tr");
+        tableThs.forEach((th, ind) => {
+            th.style.width = this._initWidths[ind];
+            th.querySelector(".slds-cell-fixed").style.width = this._initWidths[ind];
+        });
+        tableBodyRows.forEach(row => {
+            let rowTds = row.querySelectorAll(".dv-dynamic-width");
+            rowTds.forEach((td, ind) => {
+                rowTds[ind].style.width = this._initWidths[ind];
+            });
+        });
+    }
+ 
+    paddingDiff(col) {
+ 
+        if (this.getStyleVal(col, 'box-sizing') === 'border-box') {
+            return 0;
+        }
+ 
+        this._padLeft = this.getStyleVal(col, 'padding-left');
+        this._padRight = this.getStyleVal(col, 'padding-right');
+        return (parseInt(this._padLeft, 10) + parseInt(this._padRight, 10));
+ 
+    }
+ 
+    getStyleVal(elm, css) {
+        return (window.getComputedStyle(elm, null).getPropertyValue(css))
+    }
+
+close(){
+		setTimeout(
+			function() {
+				window.history.back();
+			},
+			1000
+		);
+	}
+
+
+    handleInputChange(event) {
+        this.chr = parseInt(event.target.value, 10);
+    }
+
+    search() {
+        searchKeyword({ chr: this.chr })
+            .then(result => {
+                this.searchResults = result.map(item => ({ ...item, isSelected: false }));
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+    handleCheckboxChange(event) {
+        const recordId = event.target.dataset.id;
+        const selectedRecord = this.searchResults.find(record => record.Id === recordId);
+        if (selectedRecord) {
+            selectedRecord.isSelected = !selectedRecord.isSelected;
+        }
+        this.selectAll = this.searchResults.every(record => record.isSelected);
+        this.selectedRecords = this.searchResults
+            .filter(record => record.isSelected)
+            .map(record => ({
+                Applicants: record.Applicants,
+                TmWatch: record.TmWatch,
+                MatterTitle: record.MatterTitle
+            }));
+    }
+
+    handleSelectAll(event) {
+        this.selectAll = event.target.checked;
+        this.searchResults = this.searchResults.map(record => ({
+            ...record,
+            isSelected: this.selectAll
+        }));
+        this.selectedRecords = this.selectAll
+            ? this.searchResults.map(record => ({
+                Applicants: record.Applicants,
+                TmWatch: record.TmWatch,
+                MatterTitle: record.MatterTitle
+            }))
+            : [];
+    }
+
+    showSuccessMessage() {
+        const event = new ShowToastEvent({
+            title: 'Success',
+            message: 'Records submitted successfully',
+            variant: 'success',
+        });
+        this.dispatchEvent(event);
+    }
+    
+    submitSelectedRecords() {
+        const selectedRecords = this.searchResults
+            .filter(record => record.isSelected)
+            .map(record => ({
+                isSelected: record.isSelected,
+                MatterTitle: record.MatterTitle
+            }));
+    
+        // Call the new Apex method to insert records into TM_Result__c object
+        saveSelectedRecords({ selectedRecords })
+            .then(() => {
+                // Reset the selection and do any necessary UI updates
+                this.resetSelection();
+                // Show success message
+                this.showSuccessMessage();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    }
+
+
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.table-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.slds-table {
+    max-width: 100%;
+}
+
+
+.tableScrolld {
+    overflow: auto;
+    overflow-y: hidden;
+    height: 10rem;
+}
+
+
+.Searchbutton{
+    margin: 23.5px;
+}
+
+.returnbutton{
+    margin-left: 310px;
+    margin-right: inherit;
+}
+
+.Submitbutton{
+    margin-top:23.5px;
+}
+
+.color{
+    background:#66f2f7 ;
+}
+
+.backimg{
+    background: rgb(247,228,236);
+background: radial-gradient(circle, rgba(247,228,236,1) 0%, rgba(223,234,248,1) 22%);
+}
+
+.backimgg{
+    background: rgb(247,228,236);
+    background: radial-gradient(circle, rgba(247,228,236,1) 0%, rgba(223,234,248,1) 22%);
+    margin: 0.5px;
+    padding: 15px;
+    margin-left: -0.3px;
+    margin-right: -0.3px;
+    margin-bottom: -10px;
+    box-shadow: inset;
+    
+}
+
+.textclass{
+    text-decoration-color: black;
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public with sharing class CustomTMWatchController {
+    public class SearchResult {
+        @AuraEnabled
+        public Boolean isSelected { get; set; }
+        @AuraEnabled
+        public String Applicants { get; set; }
+        @AuraEnabled
+        public String TmWatch { get; set; }
+        @AuraEnabled
+        public String MatterTitle { get; set; }
+        @AuraEnabled
+        public Id Id { get; set; }
+        @AuraEnabled
+        public String searchResult { get; set; } // Add the searchResult field
+    }
+
+    @AuraEnabled(cacheable=true)
+    public static List<SearchResult> searchKeyword(Integer chr) {
+        
+        //String[] excludedKeyword = new String[]{'to', 'TO', 'THE', 'the', '&', 'in', 'AND', 'and'};
+        List<SearchResult> results = new List<SearchResult>();
+        TmWatch_Excluded_Words__mdt[] keyword = [SELECT Id, Keyword__c FROM TmWatch_Excluded_Words__mdt];
+        
+        List<TM_Watch__c> tmList = [SELECT Id, Mark__c,Applicant__c FROM TM_Watch__c WHERE Mark__c != null];
+        List<Opportunity> matterList = [SELECT Id, Name FROM Opportunity];
+        
+        String[] arKeyword;
+        String mark;
+    
+        
+        for (TM_Watch__c tm : tmList) {
+            if (tm.Mark__c == null) {
+                continue;
+            }
+            mark = tm.Mark__c;
+            arKeyword = mark.split(' ');
+            for (String k : arKeyword) {
+                if (k.length() < chr) {
+                    continue;
+                }
+              
+                if (String.Valueof(keyword[0].keyword__c).contains(k.substring(0, chr))) {
+                    continue;
+                }
+                SearchResult result = new SearchResult();
+                result.Applicants = tm.Applicant__c;
+                result.TmWatch = tm.Mark__c;
+                result.searchResult = k.substring(0, chr); // Calculate searchResult based on chr
+                processOpportunity(result, matterList, k.substring(0, chr));
+                if (!String.isBlank(result.MatterTitle)) {
+                    result.Id = tm.Id;
+                    results.add(result);
+                }
+            }
+        }
+        return results;
+    }
+
+    private static void processOpportunity(SearchResult result, List<Opportunity> matterList, String keyword) {
+        for (Opportunity op : matterList) {
+            if (op.Name.toLowerCase().contains(keyword.toLowerCase())) {
+                result.MatterTitle = op.Name;
+                break;
+            }
+        }
+    }
+
+    @AuraEnabled
+    public static void saveSelectedRecords(List<SearchResult> selectedRecords) {
+        List<TM_Result__c> newRecordsToInsert = new List<TM_Result__c>();
+        for (SearchResult record : selectedRecords) {
+            if (record.isSelected && record.MatterTitle!=null) {
+                TM_Result__c newRecord = new TM_Result__c();
+                    newRecord.Matter_Title__c = record.MatterTitle;
+                    // Set any other required fields here
+                    newRecordsToInsert.add(newRecord);
+                
+            }
+        }
+        if (!newRecordsToInsert.isEmpty()) {
+            insert newRecordsToInsert;
+        }
+    }
+}
